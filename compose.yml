@@ -7,12 +7,12 @@ services:
       - 5000:5000
     depends_on:
       - mongodb
-    environment: 
-      - MONGODB_URI=mongodb://mongodb:27017/todos
-      - AWS_ACCESS_KEY_ID=< PUT YOUR OWN AWS ACCESS KEY HERE >
-      - AWS_SECRET_ACCESS_KEY=< PUT YOUR OWN AWS SECRET ACCESS KEY HERE >
-      - S3_BUCKET_NAME=image-gallery-test-bucket
-      - AWS_REGION=us-east-1
+    #environment: 
+      #- MONGODB_URI=mongodb://mongodb:27017/todos
+      #- AWS_ACCESS_KEY_ID=< PUT YOUR OWN AWS ACCESS KEY HERE >
+      #- AWS_SECRET_ACCESS_KEY=< PUT YOUR OWN AWS SECRET ACCESS KEY HERE >
+      #- S3_BUCKET_NAME=image-gallery-test-bucket
+      #- AWS_REGION=us-east-1
 
   frontend:
     build:

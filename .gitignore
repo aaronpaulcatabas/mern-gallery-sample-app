@@ -1,3 +1,14 @@
 dist
 node_modules
+.vagrant
+node_modules
+*.log
+dist
+venv
+.*
+!.dockerignore
+__pycache__
+tmp
+*.tfstate*
+terraform.*
 .env
