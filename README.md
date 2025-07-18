@@ -16,10 +16,10 @@
         - Create terraform.tfvars
         - Test/Apply Terraform configuration:
 
-            cd terraform
-            terraform init
-            terraform plan
-            terraform apply
+    cd terraform
+    terraform init
+    terraform plan
+    terraform apply
 
   2. Configuration Management with Ansible
   3. Continuous Deployment with Jenkins
