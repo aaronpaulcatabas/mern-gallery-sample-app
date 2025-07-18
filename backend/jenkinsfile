@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+    environment {
+        repo_url = 'https://github.com/aaronpaulcatabas/mern-gallery-sample-app'
+        repo_dir = '/home/ubuntu/mern-gallery-sample-app'  
+        docker_image = 'aaronpaulcatabas/mern-gallery-sample-app-backend'
+        docker_tag = "${currentBuild.number}"
+        docker_latest_tag = 'latest'
+        dockerhub_credentials_id = 'dockerhub-credentials'
+    }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                cleanWs()
+                git url: "${repo_url}", branch: 'main'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                dir("${repo_dir}") {
+                    sh "docker build -t ${docker_image}:${docker_tag} ."
+                    sh "docker tag ${docker_image}:${docker_tag} ${docker_image}:${docker_latest_tag}"
+                }
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: "${dockerhub_credentials_id}", 
+                    usernameVariable: 'DOCKERHUB_USER', 
+                    passwordVariable: 'DOCKERHUB_PASS'
+                )]) {
+                    sh "echo ${DOCKERHUB_PASS} | docker login -u ${DOCKERHUB_USER} --password-stdin"
+                    sh "docker push ${docker_image}:${docker_tag}"
+                    sh "docker push ${docker_image}:${docker_latest_tag}"
+                }
+            }
+        }
+        
+        stage('Cleanup Existing Container') {
+            steps {
+                script {
+                    sh "docker stop ${repo_dir}-container || true"
+                    sh "docker rm ${repo_dir}-container || true"
+                }
+            }
+        }
+        
+        stage('Deploy to EC2') {
+            steps {
+                script {
+                    // Determine port based on component
+                    def port = (repo_dir == 'frontend-instance') ? '3000' : '5000'
+                    
+                    sh """
+                    docker run -d \
+                        --name ${repo_dir}-container \
+                        -p ${port}:${port} \
+                        ${repo_dir == 'backend-instance' ? '-e AWS_BUCKET_NAME=mern-s3-bucket -e AWS_REGION=us-east-1' : ''} \
+                        ${docker_image}:${docker_latest_tag}
+                    """
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Cleaning up Docker resources...'
+            sh 'docker system prune -af'
+        }
+        success {
+            echo 'Deployment completed successfully!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}

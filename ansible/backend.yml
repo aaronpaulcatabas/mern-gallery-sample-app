@@ -1,0 +1,28 @@
+---
+- name: Configure Backend
+  hosts: backend
+  become: yes
+  vars:
+    s3_bucket: "{{ s3_bucket_name }}"
+  tasks:
+    - name: Install docker
+      apt: 
+        name: docker.io
+        state: present
+
+    - name: Clone repo
+      git:
+        repo: https://github.com/aaronpaulcatabas/mern-gallery-sample-app.git
+        dest: /opt/app
+
+    - name: Configure environment
+      copy:
+        content: |
+          AWS_BUCKET_NAME={{ s3_bucket }}
+          AWS_REGION=us-east-1
+        dest: /opt/app/backend-instance/.env
+
+    - name: Start container
+      command: docker run -d -p 5000:5000 -v $(pwd):/app -v /app/node_modules --env-file .env your-dockerhub/backend
+      args:
+        chdir: /opt/app/backend-instance

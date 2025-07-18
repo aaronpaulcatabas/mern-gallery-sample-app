@@ -1,0 +1,19 @@
+---
+- name: Configure Proxy Server
+  hosts: proxy
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt: 
+        name: nginx 
+        state: present
+
+    - name: Copy proxy config
+      copy:
+        src: ../proxy-server/nginx.conf
+        dest: /etc/nginx/sites-available/default
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted

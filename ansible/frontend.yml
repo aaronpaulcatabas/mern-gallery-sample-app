@@ -1,0 +1,21 @@
+---
+- name: Configure Frontend
+  hosts: frontend
+  become: yes
+  tasks:
+    - name: Install docker and docker-compose
+      apt: 
+        name: 
+          - docker.io
+          - docker-compose
+        state: present
+
+    - name: Clone repo
+      git:
+        repo: https://github.com/aaronpaulcatabas/mern-gallery-sample-app.git
+        dest: /opt/app
+
+    - name: Start containers
+      command: docker-compose up -d
+      args:
+        chdir: /opt/app/frontend-instance
